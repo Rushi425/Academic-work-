@@ -7,7 +7,7 @@ class FileHandling {
     public static void main(String[] args) {
         try {
             // Specify the file path
-            File f = new File("C:\\Users\\acer\\Desktop\\java_EX\\ABCD.txt");
+            File f = new File("D:\\5th sem\\java\\Abc.txt");
 
             // Check if the file is created or already exists
             if (f.createNewFile()) {
