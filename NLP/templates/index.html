@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Avoid padding issues */
+            resize: vertical; /* Allow vertical resize */
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #fff;
+            min-height: 50px; /* Ensure space for result */
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+        }
+        .positive { color: green; font-weight: bold; }
+        .negative { color: red; font-weight: bold; }
+        .neutral { color: gray; font-weight: bold; }
+        .error { color: darkred; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Sentiment Analysis</h1>
+    <textarea id="textInput" rows="5" placeholder="Enter text here..."></textarea>
+    <button onclick="predictSentiment()">Predict Sentiment</button>
+    <div id="result">
+        Prediction will appear here...
+    </div>
+
+    <script>
+        async function predictSentiment() {
+            const textInput = document.getElementById('textInput');
+            const resultDiv = document.getElementById('result');
+            const text = textInput.value.trim();
+
+            resultDiv.textContent = 'Analyzing...'; // Provide feedback
+            resultDiv.className = ''; // Reset classes
+
+            if (!text) {
+                resultDiv.textContent = 'Please enter some text.';
+                resultDiv.className = 'error';
+                return;
+            }
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text }),
+                });
+
+                if (!response.ok) {
+                     const errorData = await response.json();
+                     throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Display the result
+                let sentimentClass = data.sentiment.toLowerCase();
+                resultDiv.innerHTML = `
+                    Text: ${data.text}<br>
+                    Sentiment: <span class="${sentimentClass}">${data.sentiment}</span><br>
+                    Score (compound): ${data.scores.compound.toFixed(3)}
+                `;
+                 resultDiv.className = ''; // Clear any previous class
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.textContent = `Error predicting sentiment: ${error.message}`;
+                resultDiv.className = 'error';
+            }
+        }
+    </script>
+</body>
+</html> 
